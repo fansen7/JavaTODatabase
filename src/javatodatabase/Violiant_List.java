@@ -249,7 +249,7 @@ class Violiant_Check
 
 public class Violiant_List extends Violiant_Check
 {
-    private String File_Path_List = "city.txt";
+    private String File_Path_List = "JSONc.txt";
     
     private String[] Street_Name;
     private double[] Street_Limit_Speed;
@@ -297,9 +297,9 @@ public class Violiant_List extends Violiant_Check
         flag = true;
         ExtraTurn = 0;
         
-        Datainput();
+        //Datainput();
 
-        //JSONanlize();
+        JSONanlize();
     }
     
     
@@ -463,6 +463,7 @@ public class Violiant_List extends Violiant_Check
 
             Street_Name = new String[j.length()];
             Street_Limit_Speed = new double[j.length()];
+            street_block_len = new int[j.length()];
 
             Block_Start = new double[j.length()][][];
             Block_End = new double[j.length()][][];
@@ -492,6 +493,7 @@ public class Violiant_List extends Violiant_Check
                 Street_Limit_Speed[i] = jj.getDouble("LimitSpeed");
 
                 JSONArray ja = jj.getJSONArray("StreetBlock");
+                street_block_len[i] = ja.length();
                 
                 Street_Mode[i] = new int[ja.length()];
                 Block_Start[i] = new double[ja.length()][2];
@@ -581,7 +583,7 @@ public class Violiant_List extends Violiant_Check
     {
         double minl = 10000;
         int out = 0;
-        for(int i = 0;i<Street_Mode[road].length;i++)
+        for(int i = 0;i<street_block_len[road];i++)
         {
             //計算內積
             double newx1 = super.longitude_length(Lon)-super.longitude_length(Block_Start[road][i][0]),newx2 = super.longitude_length(Lon)-super.longitude_length(Block_End[road][i][0]);
@@ -826,7 +828,7 @@ public class Violiant_List extends Violiant_Check
              Database.insertViolation(License,(double)longitude, (double)latitude, 
                  (double)speed, Street_N,"禁止區域",DATE_,Time_);
         if(vio[3] == 1)
-             Database.insertViolation(License,(double)longitude, (double)latitude,
+             Database.insertViolation(License,(double)longitude,(double)latitude, 
                  (double)speed, Street_N,"違規左轉",DATE_,Time_);
         if(vio[3] == 2)
              Database.insertViolation(License,(double)longitude, (double)latitude,
