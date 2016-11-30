@@ -828,10 +828,10 @@ public class Violiant_List extends Violiant_Check
              Database.insertViolation(License,(double)longitude, (double)latitude, 
                  (double)speed, Street_N,"禁止區域",DATE_,Time_);
         if(vio[3] == 1)
-             Database.insertViolation(License,(double)longitude,(double)latitude, 
+             Database.insertViolation(License,(double)longitude, (double)latitude,
                  (double)speed, Street_N,"違規左轉",DATE_,Time_);
         if(vio[3] == 2)
-             Database.insertViolation(License,(double)longitude, (double)latitude,
+             Database.insertViolation(License,(double)longitude,(double)latitude, 
                  (double)speed, Street_N,"違規右轉",DATE_,Time_);
     }
     
