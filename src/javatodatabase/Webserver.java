@@ -35,7 +35,10 @@ public class Webserver implements Runnable {
     private boolean H = false;
     private boolean I = false;
     private boolean J = false;
-
+    private boolean K = false;
+    private boolean L = false;
+    private boolean M = false;
+    private boolean N = false;
     private JTextArea Display_ = null;
 
     public void setATRUE() {
@@ -74,6 +77,18 @@ public class Webserver implements Runnable {
   public void setJTRUE() {
         J = true;
     }
+  public void setKTRUE() {
+        K = true;
+    }
+  public void setLTRUE() {
+        L = true;
+    }
+  public void setMTRUE() {
+        M = true;
+    }
+  public void setNTRUE() {
+        N = true;
+    }
     
   //---------------------
   public void setAFALSE() {
@@ -104,14 +119,26 @@ public class Webserver implements Runnable {
         G = false;
     }
 
-        public void setHFALSE() {
+    public void setHFALSE() {
         H = false;
     }
-            public void setIFALSE() {
+    public void setIFALSE() {
         I = false;
     }
-                public void setJFALSE() {
+    public void setJFALSE() {
         J = false;
+    }
+    public void setKFALSE() {
+        K = false;
+    }
+    public void setLFALSE() {
+        L = false;
+    }
+    public void setMFALSE() {
+        M = false;
+    }
+    public void setNFALSE() {
+        N = false;
     }
 
     /*public static void main(String args[]) throws Exception {
@@ -299,8 +326,8 @@ public class Webserver implements Runnable {
                     String jsonMessage;
 
                   //  jsonMessage= String.format("{\"A\" : %b , \"B\": %b ,\"C\": %b, \"D\": %b, \"E\": %b, \"F\": %b, \"G\": %b}",true,true,true,true,true,true,true);
-    jsonMessage = String.format("{\"A\" : %b , \"B\": %b ,\"C\": %b, \"D\": %b, \"E\": %b, \"F\": %b, \"G\": %b, \"H\": %b, \"I\": %b, \"J\": %b}"
-            , A, B, false, D, E, F, G,H,I,J);
+    jsonMessage = String.format("{\"A\" : %b , \"B\": %b ,\"C\": %b, \"D\": %b, \"E\": %b, \"F\": %b, \"G\": %b, \"H\": %b, \"I\": %b, \"J\": %b, \"O\": %b, \"L\": %b, \"M\": %b, \"N\": %b}"
+            , A, B, false, D, E, F, G,H,I,J,K,L,M,N);
 //                    switch (i % 7) {
 //                        case 0:
 //                            jsonMessage = String.format("{\"A\" : %b , \"B\": %b ,\"C\": %b, \"D\": %b, \"E\": %b, \"F\": %b, \"G\": %b}", true, false, false, false, false, false, false);
@@ -360,6 +387,18 @@ public class Webserver implements Runnable {
                     }
                     if (J) {
                         this.setJFALSE();
+                    }
+                    if (K) {
+                        this.setKFALSE();
+                    }
+                    if (L) {
+                        this.setLFALSE();
+                    }
+                    if (M) {
+                        this.setMFALSE();
+                    }
+                    if (N) {
+                        this.setNFALSE();
                     }
                 } else if (content.equals(" Setting")) {
                     String jsonMessage;
@@ -427,7 +466,7 @@ public class Webserver implements Runnable {
         out.flush();
     }
 
-    public void violiant_re(String chk) {
+    /*public void violiant_re(String chk) {
         System.out.println(chk);
         String[] chkC = chk.split(",");
         for (int i = 0; i < chkC.length; i++) {
@@ -447,5 +486,43 @@ public class Webserver implements Runnable {
                 this.setGTRUE();
             }
         }
-    }
+    }*/
+    
+     public void violiant_re(String chk)
+ {
+     System.out.println(chk);
+     //System.err.print("debug _ re");
+     String[] chkC = chk.split(",");
+     for(int i = 0;i<chkC.length;i++)
+     {
+         if(chkC[i].equals("即將超速"))
+             this.setATRUE();
+         else if(chkC[i].equals("超速"))
+             this.setBTRUE();
+         else if(chkC[i].equals("逆向行駛"))
+             this.setCTRUE();
+         else if(chkC[i].equals("禁行區域"))
+             this.setDTRUE();
+         else if(chkC[i].equals("違規左轉"))
+             this.setETRUE();
+         else if(chkC[i].equals("違規右轉"))
+             this.setFTRUE();
+         else if(chkC[i].equals("前方路段有禁止進入區域"))
+             this.setGTRUE();
+         else if(chkC[i].equals("前方路段禁止左轉"))
+             this.setHTRUE();
+         else if(chkC[i].equals("前方路段禁止右轉"))
+             this.setITRUE();
+         else if(chkC[i].equals("前方路段禁止轉彎"))
+             this.setJTRUE();
+         else if(chkC[i].equals("前方300有禁止進入區域"))
+             this.setKTRUE();
+         else if(chkC[i].equals("前方300禁止左轉"))
+             this.setLTRUE();
+         else if(chkC[i].equals("前方300禁止右彎"))
+             this.setMTRUE();
+         else if(chkC[i].equals("前方300禁止轉彎"))
+             this.setNTRUE();
+     }
+ }
 }
