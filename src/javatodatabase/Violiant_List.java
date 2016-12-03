@@ -31,12 +31,51 @@ class Violiant_Check
 {
     private double Pre_longitude,Pre_latitude;
     private int[] limitin_flag,left_flag;
+    private int[] limitr_flag,Turnr_flag;
     private double[][] Pre_distance;
     public Violiant_Check()
     {
         Pre_longitude = Pre_latitude = 0;
         Pre_distance = new double[2][];
     }
+    
+    public String String_process(String road)
+    {
+        String output = road;
+        int endpoint = 0;
+        if(output.contains("弄"))
+        {
+            endpoint = output.lastIndexOf("弄");
+            output = output.substring(0,endpoint+1);
+        }
+        else if(output.contains("巷"))
+        {
+            endpoint = output.lastIndexOf("巷");
+            output = output.substring(0,endpoint+1);
+        }
+        else if(output.contains("街"))
+        {
+            endpoint = output.lastIndexOf("街");
+            output = output.substring(0,endpoint+1);
+        }
+        else if(output.contains("路"))
+        {
+            endpoint = output.lastIndexOf("路");
+            output = output.substring(0,endpoint+1);
+        }
+        else if(output.contains("大道"))
+        {
+            endpoint = output.lastIndexOf("大道");
+            output = output.substring(0,endpoint+1);
+        }
+        else if(output.contains("衖"))
+        {
+            endpoint = output.lastIndexOf("衖");
+            output = output.substring(0,endpoint+1);
+        }
+        return output;
+    }
+    
     
     private boolean String_Compare(String majorStr,String minorStr)
     {
@@ -48,6 +87,32 @@ class Violiant_Check
                 return false;
         }
         return true;
+    }
+    
+    public void clean_remind_flag(int limit,int turn)
+    {
+        limitr_flag = null;
+        Turnr_flag = null;
+        
+        System.gc();
+        
+        if(limit>0){
+            limitr_flag = new int[limit];
+            
+        }
+        else
+        {
+            limitr_flag = new int[1];
+            limitr_flag[0] = -1;
+        }
+        if(turn>0){
+            Turnr_flag = new int[turn];
+        }
+        else
+        {
+            Turnr_flag = new int[1];
+            Turnr_flag[0] = -1;
+        }
     }
     
     public void clean_flag(int limit,int left)
@@ -99,6 +164,20 @@ class Violiant_Check
         if(limitin_flag[0] == -1)
             return 3;
         return limitin_flag[num];
+    }
+    
+    public int Getleftrflag(int num)
+    {
+        if(Turnr_flag[0] == -1)
+            return 3;
+        return Turnr_flag[num];
+    }
+    
+    public int Getlimitinrflag(int num)
+    {
+        if(limitr_flag[0] == -1)
+            return 3;
+        return limitr_flag[num];
     }
     
     public double longitude_length(double x)
@@ -171,8 +250,8 @@ class Violiant_Check
     public int Illegal_Turn_Left(int reverseflag,int status,int now_Block,int Turn_Block,String now_street_name,String Turn_street_name)
     {
         int is_reverse = reverseflag;
-        System.out.println(is_reverse);
-        if(String_Compare(Turn_street_name,now_street_name)&&now_Block == Turn_Block)
+        System.out.println("Turn reverse: "+is_reverse);
+        if(now_street_name.equals(Turn_street_name)&&now_Block == Turn_Block)
         {
             if(is_reverse == 0)
             {
@@ -191,11 +270,58 @@ class Violiant_Check
         }
         return 0;
     }
-    public int distance(double Lon,double Lat,double x,double y,int status,int num,double xD,double yD,int T)
+    
+    public boolean crosspoint(double now_Lon,double now_Lat,double pointLon,double pointLat)
     {
+        double newx1 = longitude_length(pointLon)-longitude_length(Pre_longitude),newx2 = longitude_length(pointLon)-longitude_length(now_Lon);
+        double newy1 = latitude_length(pointLat)-latitude_length(Pre_latitude),newy2 = latitude_length(pointLat)-latitude_length(now_Lat);
+        double len1 = java.lang.Math.sqrt(java.lang.Math.pow(newx1, 2)+java.lang.Math.pow(newy1, 2));
+        double len2 = java.lang.Math.sqrt(java.lang.Math.pow(newx2, 2)+java.lang.Math.pow(newy2, 2));
+        System.out.println((newx1*newx2+newy1*newy2)/(len1*len2));
+        if((newx1*newx2+newy1*newy2)/(len1*len2)<0)
+            return true;
+        return false;
+    }
+    
+    public int distance(double Lon,double Lat,double x,double y,int status,int num,double xD,double yD,int T,boolean remind)
+    {
+        if(remind)
+        {
+            if(Pre_longitude == 0&&Pre_latitude == 0)
+            {
+            Pre_longitude = Lon;
+            Pre_latitude = Lat;
+            return 0;
+            }
+            if(status == 1)
+            {
+                if(crosspoint(Lon,Lat,x,y)&&limitr_flag[num] == 0){//需調整
+                    limitr_flag[num]+=2;
+                    return 2;
+                }
+            }
+            else
+            {
+                int is_inverse = reverse_direction(Lon,Lat,xD,yD);
+                System.out.println("distance reverse: "+is_inverse);
+                if(crosspoint(Lon,Lat,x,y)&&Turnr_flag[num] == 0){
+                    Turnr_flag[num]+=2;
+                    if(T == 1&&is_inverse == 0)
+                        return 4;
+                    else if(T == 2&&is_inverse == 0)
+                        return 5;
+                    else if(T == 3)
+                    {
+                        return 6;  
+                    }
+                    else
+                        return 0;
+                }
+            }
+        }
      double dis = java.lang.Math.sqrt(java.lang.Math.pow(longitude_length(Lon)-longitude_length(x),2)+java.lang.Math.pow(latitude_length(Lat)-latitude_length(y),2));
      System.out.println(dis+" "+Pre_distance[status-1][num]);
-     if(Pre_distance[status-1][num] == 0||dis>Pre_distance[status-1][num])
+     if(Pre_distance[status-1][num] == 0||dis>=Pre_distance[status-1][num])
      {
         Pre_distance[status-1][num] = dis;
         //System.out.println("debug");
@@ -205,43 +331,46 @@ class Violiant_Check
      
      if(status == 1)
      {
-        if(dis<=500&&dis>100&&limitin_flag[num] == 0)
-        {
-            limitin_flag[num]++;
-            return 2;
-        }
-        else if(dis<50&&limitin_flag[num] < 2)
-        {
-            limitin_flag[num]++;
-            return 1;
-        }
+            if(dis<=500&&dis>200&&limitin_flag[num] == 0)
+            {
+                limitin_flag[num]++;
+                return 2;
+            }
+            else if(dis<50&&limitin_flag[num] < 2)
+            {
+                limitin_flag[num] = 3;
+                return 1;
+            }
+ 
      }
      else if(status == 2)
      {
         int is_inverse = reverse_direction(Lon,Lat,xD,yD);
-        System.out.println(is_inverse);
-        if(dis<=500&&dis>100&&left_flag[num] == 0)
-        {
-            left_flag[num]++;
-            if(T == 1&&is_inverse == 0||T == 2&&is_inverse == 1)
-                return 4;
-            else if(T == 1&&is_inverse == 1||T == 2&&is_inverse == 0)
-                return 5;
-            else
+        System.out.println("distance reverse: "+is_inverse);
+        
+            if(dis<=500&&dis>200&&left_flag[num] == 0)
             {
-                return 6;  
+                left_flag[num]++;
+                if(T == 1&&is_inverse == 0||T == 2&&is_inverse == 1)
+                    return 4;
+                else if(T == 1&&is_inverse == 1||T == 2&&is_inverse == 0)
+                    return 5;
+                else 
+                {
+                    return 6;  
+                }
             }
-        }
-        else if(dis<50&&left_flag[num] < 2)
-        {
-            left_flag[num]++;
-            if(T == 1&&is_inverse == 0||T == 2&&is_inverse == 1)
-                return 1;
-            else if(T == 1&&is_inverse == 1||T == 2&&is_inverse == 0)
-                return 2;
-            else
-                return 3;
-        } 
+            else if(dis<50&&left_flag[num] < 2)
+            {
+                left_flag[num]++;
+                if(T == 1&&is_inverse == 0||T == 2&&is_inverse == 1)
+                    return 1;
+                else if(T == 1&&is_inverse == 1||T == 2&&is_inverse == 0)
+                    return 2;
+                else
+                    return 3;
+            }
+        
      }
      return 0;
     }
@@ -249,10 +378,7 @@ class Violiant_Check
 
 public class Violiant_List extends Violiant_Check
 {
-    //private String File_Path_List = "city.txt";
-    //private String File_Path_List = "mountain.txt";
-  //  private String File_Path_List = "JSONc.txt";
-    private String File_Path_List = "JSONm.txt";
+    private String File_Path_List = "city.txt";
     
     private String[] Street_Name;
     private double[] Street_Limit_Speed;
@@ -273,6 +399,11 @@ public class Violiant_List extends Violiant_Check
     private double[][][] street_limitin_lon,street_limitin_lat;
     private double[][][] street_left_lon,street_left_lat;
     private int[][] limitS_len,leftS_len;
+    
+    private boolean[] remind_status;
+    private int[][][] limitr,leftr;
+    private double[][][] limitrll,leftrll;
+    private int[][] limitr_len,leftr_len;
     
     private int List_Length;
     
@@ -300,12 +431,11 @@ public class Violiant_List extends Violiant_Check
         flag = true;
         ExtraTurn = 0;
         
-        //Datainput();
+        Datainput();
 
-        JSONanlize();
+        //JSONanlize();
+        
     }
-    
-    
     
     private void Datainput()
     {
@@ -345,12 +475,21 @@ public class Violiant_List extends Violiant_Check
                     street_left_lat = new double[List_Length][][];
                     limitS_len = new int[List_Length][];
                     leftS_len = new int[List_Length][];
+                    
+                    remind_status = new boolean[List_Length];
+                    limitr = new int[List_Length][][];
+                    leftr = new int[List_Length][][];
+                    limitrll = new double[List_Length][][];
+                    leftrll = new double[List_Length][][];
+                    limitr_len = new int[List_Length][];
+                    leftr_len = new int[List_Length][];
+                    
                     flag = false;
                 }
                 else
                 {
                     String[] chk = a.split(",");
-                    if(chk.length <= 3)
+                    if(chk.length <= 4)
                     {
                         i++;
                         //System.out.println(i);
@@ -359,6 +498,20 @@ public class Violiant_List extends Violiant_Check
                         street_block_len[i] = Integer.parseInt(chk[2]);
                         B = Integer.parseInt(chk[2]);
                         k = 0;
+                         if(Integer.parseInt(chk[3])>0)
+                        {
+                            remind_status[i] = true;
+                            limitr[i] = new int[B][];
+                            leftr[i] = new int[B][];
+                            limitrll[i] = new double[B][];
+                            leftrll[i] = new double[B][];
+                            limitr_len[i] = new int[B];
+                            leftr_len[i] = new int[B];
+                        }
+                        else
+                        {
+                            remind_status[i] = false;
+                        }
                         Street_Mode[i] = new int[B];
                         Block_Start[i] = new double[B][2];
                         Block_End[i] = new double[B][2];
@@ -384,7 +537,11 @@ public class Violiant_List extends Violiant_Check
                     {
                         if(k<B)
                         {
-                            int regester = 9;
+                            int regester;
+                            if(remind_status[i])
+                                regester = 11;
+                            else
+                                regester = 9;
                             Block_Start[i][k][0] = Double.parseDouble(chk[0]);
                             Block_Start[i][k][1] = Double.parseDouble(chk[1]);
                             Block_End[i][k][0] = Double.parseDouble(chk[2]);
@@ -438,6 +595,38 @@ public class Violiant_List extends Violiant_Check
                                     regester+=3;
                                 }
                             }
+                              if(remind_status[i])
+                              {
+                                  
+                                if(Integer.parseInt(chk[9])>0)
+                                {
+                                    limitr_len[i][k] = Integer.parseInt(chk[9]);
+                                    limitr[i][k] = new int[Integer.parseInt(chk[9])];
+                                    limitrll[i][k] = new double[Integer.parseInt(chk[9])*2];
+                                    for(int z = 0;z<Integer.parseInt(chk[9]);z++)
+                                    {
+                                        limitr[i][k][z] = Integer.parseInt(chk[regester]);
+                                        limitrll[i][k][z*2] = Double.parseDouble(chk[regester+1]);
+                                        limitrll[i][k][z*2+1] = Double.parseDouble(chk[regester+2]);
+                                        //System.out.println(regester);
+                                        regester+=3;
+                                    }
+                                }
+                                if(Integer.parseInt(chk[10])>0)
+                                {
+                                    leftr_len[i][k] = Integer.parseInt(chk[10]);
+                                    leftr[i][k] = new int[Integer.parseInt(chk[10])];
+                                    leftrll[i][k] = new double[Integer.parseInt(chk[10])*2];
+                                    for(int z = 0;z<Integer.parseInt(chk[10]);z++)
+                                    {
+                                        leftr[i][k][z] = Integer.parseInt(chk[regester]);
+                                        leftrll[i][k][z*2] = Double.parseDouble(chk[regester+1]);
+                                        leftrll[i][k][z*2+1] = Double.parseDouble(chk[regester+2]);
+                                        //System.out.println(regester);
+                                        regester+=3;
+                                    }
+                                }
+                              }
                             k++;
                         }
                     }
@@ -491,6 +680,7 @@ public class Violiant_List extends Violiant_Check
         
             for(int i = 0;i<j.length();i++)
             {
+                //System.out.println(i);
                 JSONObject jj = (JSONObject)j.get(i);
                 Street_Name[i] = jj.getString(("StreetName"));
                 Street_Limit_Speed[i] = jj.getDouble("LimitSpeed");
@@ -643,6 +833,7 @@ public class Violiant_List extends Violiant_Check
         return StreetName;
     }
     
+
     private boolean String_Compare(String majorStr,String minorStr)
     {
         for(int i = 0;i<majorStr.length();i++)
@@ -659,17 +850,19 @@ public class Violiant_List extends Violiant_Check
     public String VioliantCheck(String License,double longitude,double latitude,double speed,String Street_N,String Date_,String Time_)
     {
         int[] Vio = new int[6];
-        String name =Street_N,output ="";
+        String name =super.String_process(Street_N),output ="";
         if(name == null)
         {
             return "";
         }
+        System.out.println("Client_road: "+name);
         //找出此位置是否在我們的範圍清單內
         int i  = 0;
         for(int j = 0;j<List_Length;j++)
         {
-            //System.out.println("*"+Street_Name[i]+"\n"+name);
-            if(name.contains(Street_Name[j])){
+            //System.out.println(j);
+            //System.out.println("*"+Street_Name[j]+"\n"+name);
+            if(name.equals(Street_Name[j])){
                 i = j;
                 j = List_Length;
                 break;
@@ -680,13 +873,17 @@ public class Violiant_List extends Violiant_Check
             }
         }
         int B = Block_check(i,longitude,latitude);
-        if(!now_road.contains(Street_Name[i])||B != now_block)
+        if(!now_road.equals(Street_Name[i])||B != now_block)
         {
             now_road = Street_Name[i];
             now_block = B;
             super.clean_flag(limitS_len[i][B],leftS_len[i][B]);
+            if(remind_status[i])
+                super.clean_remind_flag(limitr_len[i][B], leftr_len[i][B]);
             if(flag)
                 ExtraTurn = 2;
+            else
+                ExtraTurn = 0;
         }
         System.out.println("road: "+now_road+",Block: "+now_block);
         //判斷超速
@@ -696,11 +893,15 @@ public class Violiant_List extends Violiant_Check
         //街道產生變化時依照上一條街是否有違規轉彎之有無來判斷是否要進行左右轉違規判斷
         if(ExtraTurn>0)
         {
-            for(int z = 0;z<TurnL;z++)
+            for(int z = 0;z<TurnL;z++){
                 Vio[3] = super.Illegal_Turn_Left(TurnRe,Turn[z],now_block,Turn_block[z],now_road,Turn_road[z]);
-            flag = false;
-            if(Vio[3]>0)
+                if(Vio[3]>0){
                 ExtraTurn = 0;
+                flag = false;
+                break;
+            }
+            }
+            flag = false;
             ExtraTurn--;
         }
         switch(Street_Mode[i][B])
@@ -719,11 +920,11 @@ public class Violiant_List extends Violiant_Check
             //3->判斷違規左轉
             case 3:
                 flag = true;
-                for(int z = 0;z<leftS_len[i][B]&&Getleftflag(z)<3;z++)
+                for(int z = 0;z<leftS_len[i][B]&&Getleftflag(z)<2;z++)
                 {
                     if(Vio[5]>0)
                         break;
-                    Vio[5] = super.distance(longitude, latitude, street_left_lon[i][B][z], street_left_lat[i][B][z],2,z,StreetX[i][B],StreetY[i][B],leftS[i][B][z]);
+                    Vio[5] = super.distance(longitude, latitude, street_left_lon[i][B][z], street_left_lat[i][B][z],2,z,StreetX[i][B],StreetY[i][B],leftS[i][B][z],false);
                 }
                 break;
             //4->判斷逆向+進入禁止區域
@@ -770,12 +971,31 @@ public class Violiant_List extends Violiant_Check
                 break;
             default:break;*/
         }
-        for(int z = 0;z<limitS_len[i][B]&&Getlimitinflag(z)<3;z++)
+        for(int z = 0;z<limitS_len[i][B]&&Getlimitinflag(z)<2;z++)
         {
             if(Vio[4]>0)
                 break;
-            Vio[4] = super.distance(longitude, latitude, street_limitin_lon[i][B][z], street_limitin_lat[i][B][z],1,z,0,0,limitinS[i][B][z]);
-        }  
+            System.out.println(street_limitin_lon[i][B][z]+","+street_limitin_lat[i][B][z]);
+            Vio[4] = super.distance(longitude, latitude, street_limitin_lon[i][B][z], street_limitin_lat[i][B][z],1,z,0,0,limitinS[i][B][z],false);
+        }
+        if(remind_status[i])
+        {
+            System.out.println(leftr_len[i][B]);
+            System.out.println(Getleftrflag(0));
+            for(int z = 0;z<leftr_len[i][B]&&Getleftrflag(z)<2;z++)
+                    {
+                    //if(Vio[5]>0)
+                      //  break;
+                    Vio[5] = super.distance(longitude, latitude, leftrll[i][B][z*2], leftrll[i][B][z*2+1],2,z,StreetX[i][B],StreetY[i][B],leftr[i][B][z],true);
+                    }
+            for(int z = 0;z<limitr_len[i][B]&&Getlimitinrflag(z)<2;z++)
+            {
+            if(Vio[4]>0)
+                break;
+            //System.out.println(street_limitin_lon[i][B][z]+","+street_limitin_lat[i][B][z]);
+            Vio[4] = super.distance(longitude, latitude, limitrll[i][B][z*2], limitrll[i][B][z*2+1],1,z,0,0,limitr[i][B][z],true);
+            }
+        }
         if(flag)
         {
             TurnRe = super.reverse_direction(longitude, latitude,StreetX[i][B],StreetY[i][B]);
@@ -827,19 +1047,19 @@ public class Violiant_List extends Violiant_Check
     private void Violiant_To_Database(int[] vio,String License,String Street_N,double longitude,double latitude,double speed,String DATE_,String Time_)
     {
         if(vio[0] == 2)
-             Database.insertViolation(License,(double)longitude, (double)latitude,
+             Database.insertViolation(License,(double)longitude,(double)latitude ,
                  (double)speed, Street_N,"超速", DATE_,Time_);
         if(vio[1] == 1)
-             Database.insertViolation(License,(double)longitude, (double)latitude, 
+             Database.insertViolation(License,(double)longitude,(double)latitude, 
                  (double)speed, Street_N,"逆向行駛", DATE_,Time_);
         if(vio[2] == 1)
-             Database.insertViolation(License,(double)longitude, (double)latitude, 
+             Database.insertViolation(License,(double)longitude, (double)latitude,
                  (double)speed, Street_N,"禁止區域",DATE_,Time_);
         if(vio[3] == 1)
              Database.insertViolation(License,(double)longitude, (double)latitude,
                  (double)speed, Street_N,"違規左轉",DATE_,Time_);
         if(vio[3] == 2)
-             Database.insertViolation(License,(double)longitude,(double)latitude, 
+             Database.insertViolation(License,(double)longitude, (double)latitude,
                  (double)speed, Street_N,"違規右轉",DATE_,Time_);
     }
     
@@ -859,7 +1079,7 @@ public class Violiant_List extends Violiant_Check
                     System.out.println("DirX"+StreetX[i][k]+" DirY"+StreetY[i][k]);
                 if(StreetTurn[i][k] != null)
                 {
-                    for(int z = 0;z<StreetTurn[i][k].length;z++)
+                    for(int z = 0;z<streetTurnL[i][k];z++)
                     {
                         if(StreetTurn[i][k][z] == 1)
                             System.out.print("左,");
@@ -870,16 +1090,30 @@ public class Violiant_List extends Violiant_Check
                 }
                 if(limitinS[i][k] != null)
                 {
-                    for(int z = 0;z<limitinS[i][k].length;z++)
+                    for(int z = 0;z<limitS_len[i][k];z++)
                     {
                         System.out.println(limitinS[i][k][z]+"\n"+street_limitin_lon[i][k][z]+", "+street_limitin_lat[i][k][z]);
                     }
                 }
                 if(leftS[i][k] != null)
                 {
-                    for(int z = 0;z<leftS[i][k].length;z++)
+                    for(int z = 0;z<leftS_len[i][k];z++)
                     {
                         System.out.println(leftS[i][k][z]+"\n"+street_left_lon[i][k][z]+", "+street_left_lat[i][k][z]);
+                    }
+                }
+                if(remind_status[i])
+                {
+                    System.out.println("remind_data");
+                    System.out.println("Limit");
+                    for(int z = 0;z<limitr_len[i][k];z++)
+                    {
+                        System.out.println(limitr[i][k][z]+"\n"+limitrll[i][k][z*2]+", "+limitrll[i][k][z*2+1]);
+                    }
+                    System.out.println("Turn");
+                    for(int z = 0;z<leftr_len[i][k];z++)
+                    {
+                        System.out.println(leftr[i][k][z]+"\n"+leftrll[i][k][z*2]+", "+leftrll[i][k][z*2+1]);
                     }
                 }
             }
