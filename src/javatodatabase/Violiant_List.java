@@ -40,6 +40,9 @@ class Violiant_Check {
     public String String_process(String road) {
         String output = road;
         int endpoint = 0;
+        if (output == null) {
+            return null;
+        }
         if (output.contains("弄")) {
             endpoint = output.lastIndexOf("弄");
             output = output.substring(0, endpoint + 1);
@@ -273,7 +276,7 @@ class Violiant_Check {
                 int is_inverse = reverse_direction(Lon, Lat, xD, yD);
                 System.out.println("distance reverse: " + is_inverse);
                 System.out.println("dis: " + dis_point);
-                if ((crosspoint(Lon, Lat, x, y) || dis_point < 11) && Turnr_flag[num] == 0) {
+                if ((crosspoint(Lon, Lat, x, y) || dis_point < 15) && Turnr_flag[num] == 0) {
                     Turnr_flag[num] += 2;
                     if (T == 1 && is_inverse == 0) {
                         return 4;
@@ -282,10 +285,9 @@ class Violiant_Check {
                     } else if (T == 3) {
                         return 6;
                     }
-                } else {
-                    return 0;
-                }
+                } 
             }
+            return 0;
         }
         double dis = java.lang.Math.sqrt(java.lang.Math.pow(longitude_length(Lon) - longitude_length(x), 2) + java.lang.Math.pow(latitude_length(Lat) - latitude_length(y), 2));
         System.out.println(dis + " " + Pre_distance[status - 1][num]);
@@ -804,6 +806,8 @@ public class Violiant_List extends Violiant_Check {
     public String VioliantCheck(String License, double longitude, double latitude, double speed, String Street_N, String Date_, String Time_) {
         int[] Vio = new int[4];
         int[][] Vior = new int[2][];
+        int limitflaglen,Turnflaglen;
+        
         //String name =super.String_process(Street_N),output ="";
         String name = road_process(longitude, latitude), output = "";
         if (name == null) {
@@ -845,15 +849,25 @@ public class Violiant_List extends Violiant_Check {
         Vio[0] = super.OverSpeed(speed, Street_Limit_Speed[i]);
         //依照每條街的額外違規事項進行判斷
         Vio[1] = Vio[2] = Vio[3] = 0;
-        if (limitS_len[i][B] + limitr_len[i][B] > 0) {
-            Vior[0] = new int[limitS_len[i][B] + limitr_len[i][B]];
-            for (int j = 0; j < limitS_len[i][B] + limitr_len[i][B]; j++) {
+        if(remind_status[i])
+        {
+            limitflaglen = limitS_len[i][B] + limitr_len[i][B];
+            Turnflaglen = leftS_len[i][B] + leftr_len[i][B];
+        }
+        else
+        {
+            limitflaglen = limitS_len[i][B];
+            Turnflaglen = leftS_len[i][B];
+        }
+        if (limitflaglen > 0) {
+            Vior[0] = new int[limitflaglen];
+            for (int j = 0; j < limitflaglen; j++) {
                 Vior[0][j] = 0;
             }
         }
-        if (leftS_len[i][B] + leftr_len[i][B] > 0) {
-            Vior[1] = new int[leftS_len[i][B] + leftr_len[i][B]];
-            for (int j = 0; j < leftS_len[i][B] + leftr_len[i][B]; j++) {
+        if (Turnflaglen > 0) {
+            Vior[1] = new int[Turnflaglen];
+            for (int j = 0; j < Turnflaglen; j++) {
                 Vior[1][j] = 0;
             }
         }
@@ -888,8 +902,8 @@ public class Violiant_List extends Violiant_Check {
 
                 for (int z = 0; z < leftS_len[i][B] && Getleftflag(z) < 2; z++) {
                     int z1 = 0;
-                    for (int y = 0; y < leftS_len[i][B] + leftr_len[i][B]; y++) {
-                        if (Vior[z][y] == 0) {
+                    for (int y = 0; y < Turnflaglen; y++) {
+                        if (Vior[1][y] == 0) {
                             z1 = y;
                             break;
                         }
@@ -944,8 +958,8 @@ public class Violiant_List extends Violiant_Check {
 
         for (int z = 0; z < limitS_len[i][B] && Getlimitinflag(z) < 2; z++) {
             int z1 = 0;
-            for (int y = 0; y < limitS_len[i][B] + limitr_len[i][B]; y++) {
-                if (Vior[z][y] == 0) {
+            for (int y = 0; y < limitflaglen; y++) {
+                if (Vior[0][y] == 0) {
                     z1 = y;
                     break;
                 }
@@ -954,13 +968,12 @@ public class Violiant_List extends Violiant_Check {
         }
 
         if (remind_status[i]) {
-            System.out.println(leftr_len[i][B]);
-            System.out.println(Getleftrflag(0));
+            
 
             for (int z = 0; z < leftr_len[i][B] && Getleftrflag(z) < 2; z++) {
                 int z1 = 0;
-                for (int y = 0; y < leftS_len[i][B] + leftr_len[i][B]; y++) {
-                    if (Vior[z][y] == 0) {
+                for (int y = 0; y < Turnflaglen; y++) {
+                    if (Vior[1][y] == 0) {
                         z1 = y;
                         break;
                     }
@@ -969,8 +982,8 @@ public class Violiant_List extends Violiant_Check {
             }
             for (int z = 0; z < limitr_len[i][B] && Getlimitinrflag(z) < 2; z++) {
                 int z1 = 0;
-                for (int y = 0; y < limitS_len[i][B] + limitr_len[i][B]; y++) {
-                    if (Vior[z][y] == 0) {
+                for (int y = 0; y < limitflaglen; y++) {
+                    if (Vior[0][y] == 0) {
                         z1 = y;
                         break;
                     }
@@ -986,8 +999,8 @@ public class Violiant_List extends Violiant_Check {
             Turn_road = street_Turn_road[i][B];
             Turn_block = street_Turn_block[i][B];
         }
-        Violiant_To_Database(Vio, License, name, longitude, latitude, speed, Date_, Time_);
-        output = Violiant_List_Maker(Vio, Vior, limitS_len[i][B] + limitr_len[i][B], leftS_len[i][B] + leftr_len[i][B]);
+        //Violiant_To_Database(Vio, License, name, longitude, latitude, speed, Date_, Time_);
+        output = Violiant_List_Maker(Vio, Vior, limitflaglen, Turnflaglen);
         super.change(longitude, latitude);
         return output;
     }
@@ -1106,11 +1119,11 @@ public class Violiant_List extends Violiant_Check {
                 }
                 if (remind_status[i]) {
                     System.out.println("remind_data");
-                    System.out.println("Limit");
+                    System.out.println("Limit:"+limitr_len[i][k]);
                     for (int z = 0; z < limitr_len[i][k]; z++) {
                         System.out.println(limitr[i][k][z] + "\n" + limitrll[i][k][z * 2] + ", " + limitrll[i][k][z * 2 + 1]);
                     }
-                    System.out.println("Turn");
+                    System.out.println("Turn:"+leftr_len[i][k]);
                     for (int z = 0; z < leftr_len[i][k]; z++) {
                         System.out.println(leftr[i][k][z] + "\n" + leftrll[i][k][z * 2] + ", " + leftrll[i][k][z * 2 + 1]);
                     }
