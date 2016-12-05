@@ -53,9 +53,19 @@ class Violiant_Check
             endpoint = output.lastIndexOf("巷");
             output = output.substring(0,endpoint+1);
         }
-        else
+        else if(output.contains("路"))
         {
             endpoint = output.lastIndexOf("路");
+            output = output.substring(0,endpoint+1);
+        }
+        else if(output.contains("大道"))
+        {
+            endpoint = output.lastIndexOf("大道");
+            output = output.substring(0,endpoint+1);
+        }
+        else if(output.contains("衖"))
+        {
+            endpoint = output.lastIndexOf("衖");
             output = output.substring(0,endpoint+1);
         }
         return output;
@@ -292,7 +302,7 @@ class Violiant_Check
             {
                 if(crosspoint(Lon,Lat,x,y)&&limitr_flag[num] == 0){//需調整
                     limitr_flag[num]+=2;
-                    return 1;
+                    return 2;
                 }
             }
             else
@@ -309,14 +319,14 @@ class Violiant_Check
                     {
                         return 6;  
                     }
-                    else
-                        return 0;
                 }
+                else
+                        return 0;
             }
         }
      double dis = java.lang.Math.sqrt(java.lang.Math.pow(longitude_length(Lon)-longitude_length(x),2)+java.lang.Math.pow(latitude_length(Lat)-latitude_length(y),2));
      System.out.println(dis+" "+Pre_distance[status-1][num]);
-     if(Pre_distance[status-1][num] == 0||dis>Pre_distance[status-1][num])
+     if(Pre_distance[status-1][num] == 0||dis>=Pre_distance[status-1][num])
      {
         Pre_distance[status-1][num] = dis;
         //System.out.println("debug");
@@ -347,12 +357,12 @@ class Violiant_Check
             {
                 left_flag[num]++;
                 if(T == 1&&is_inverse == 0||T == 2&&is_inverse == 1)
-                    return 1;
+                    return 4;
                 else if(T == 1&&is_inverse == 1||T == 2&&is_inverse == 0)
-                    return 2;
+                    return 5;
                 else 
                 {
-                    return 3;  
+                    return 6;  
                 }
             }
             else if(dis<50&&left_flag[num] < 2)
@@ -1033,7 +1043,7 @@ public class Violiant_List extends Violiant_Check
             Turn_road = street_Turn_road[i][B];
             Turn_block = street_Turn_block[i][B];
         }
-        //Violiant_To_Database(Vio,License,name,longitude,latitude,speed, Date_, Time_); 
+        Violiant_To_Database(Vio,License,name,longitude,latitude,speed, Date_, Time_); 
         output = Violiant_List_Maker(Vio);
         super.change(longitude,latitude);
         return output;
@@ -1064,9 +1074,9 @@ public class Violiant_List extends Violiant_Check
             case 1:output += "前方路段禁止左轉,";break;
             case 2:output += "前方路段禁止右轉,";break;
             case 3:output += "前方路段禁止轉彎,";break;
-            case 4:output += "前方300公尺禁止左轉,";break;
-            case 5:output += "前方300公尺禁止右轉,";break;
-            case 6:output += "前方300公尺禁止轉彎,";break;
+            case 4:output += "前方300禁止左轉,";break;
+            case 5:output += "前方300禁止右轉,";break;
+            case 6:output += "前方300禁止轉彎,";break;
         }
         return output;
     }
@@ -1074,19 +1084,19 @@ public class Violiant_List extends Violiant_Check
     private void Violiant_To_Database(int[] vio,String License,String Street_N,double longitude,double latitude,double speed,String DATE_,String Time_)
     {
         if(vio[0] == 2)
-             Database.insertViolation(License,(double)latitude,(double)longitude, 
+             Database.insertViolation(License,(double)longitude,(double)latitude, 
                  (double)speed, Street_N,"超速", DATE_,Time_);
         if(vio[1] == 1)
-             Database.insertViolation(License,(double)latitude,(double)longitude, 
+             Database.insertViolation(License,(double)longitude,(double)latitude,
                  (double)speed, Street_N,"逆向行駛", DATE_,Time_);
         if(vio[2] == 1)
-             Database.insertViolation(License,(double)latitude,(double)longitude, 
+             Database.insertViolation(License,(double)longitude,(double)latitude,
                  (double)speed, Street_N,"禁止區域",DATE_,Time_);
         if(vio[3] == 1)
-             Database.insertViolation(License,(double)latitude,(double)longitude, 
+             Database.insertViolation(License,(double)longitude,(double)latitude,
                  (double)speed, Street_N,"違規左轉",DATE_,Time_);
         if(vio[3] == 2)
-             Database.insertViolation(License,(double)latitude,(double)longitude, 
+             Database.insertViolation(License,(double)longitude,(double)latitude, 
                  (double)speed, Street_N,"違規右轉",DATE_,Time_);
     }
     
