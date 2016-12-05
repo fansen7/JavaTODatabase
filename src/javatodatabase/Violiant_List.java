@@ -870,6 +870,7 @@ public class Violiant_List extends Violiant_Check
         
         last_road = super.String_process(Get_Street_Name(Lon-newDirX,Lat-newDirY));
         next_road = super.String_process(Get_Street_Name(Lon+newDirX,Lat+newDirY));
+        
         if(last_road.equals(now_road))
         {
             output = last_road;
@@ -887,7 +888,8 @@ public class Violiant_List extends Violiant_Check
     
     public String VioliantCheck(String License,double longitude,double latitude,double speed,String Street_N,String Date_,String Time_)
     {
-        int[] Vio = new int[6];
+        int[] Vio = new int[4];
+        int[][] Vior = new int[2][];
         //String name =super.String_process(Street_N),output ="";
         String name =road_process(longitude,latitude),output ="";
         if(name == null)
@@ -928,7 +930,17 @@ public class Violiant_List extends Violiant_Check
         //判斷超速
         Vio[0] = super.OverSpeed(speed,Street_Limit_Speed[i]);
         //依照每條街的額外違規事項進行判斷
-        Vio[1] = Vio[2] = Vio[3] = Vio[4] = Vio[5] = 0;
+        Vio[1] = Vio[2] = Vio[3] = 0;
+        if(limitS_len[i][B]+limitr_len[i][B]>0){
+            Vior[0] = new int[limitS_len[i][B]+limitr_len[i][B]];
+            for(int j = 0;j<limitS_len[i][B]+limitr_len[i][B];j++)
+                Vior[0][j] = 0;
+        }
+        if(leftS_len[i][B]+leftr_len[i][B]>0){
+            Vior[1] = new int[leftS_len[i][B]+leftr_len[i][B]];
+           for(int j = 0;j<leftS_len[i][B]+leftr_len[i][B];j++)
+                Vior[1][j] = 0;
+        }
         //街道產生變化時依照上一條街是否有違規轉彎之有無來判斷是否要進行左右轉違規判斷
         if(ExtraTurn>0)
         {
@@ -961,9 +973,15 @@ public class Violiant_List extends Violiant_Check
                 flag = true;
                 for(int z = 0;z<leftS_len[i][B]&&Getleftflag(z)<2;z++)
                 {
-                    if(Vio[5]>0)
-                        break;
-                    Vio[5] = super.distance(longitude, latitude, street_left_lon[i][B][z], street_left_lat[i][B][z],2,z,StreetX[i][B],StreetY[i][B],leftS[i][B][z],false);
+                    int z1 = 0;
+                    for(int y = 0;y<leftS_len[i][B]+leftr_len[i][B];y++){
+                        if(Vior[z][y]==0)
+                        {
+                            z1 = y;
+                            break;
+                        } 
+                    }
+                    Vior[1][z1] = super.distance(longitude, latitude, street_left_lon[i][B][z], street_left_lat[i][B][z],2,z,StreetX[i][B],StreetY[i][B],leftS[i][B][z],false);
                 }
                 break;
             //4->判斷逆向+進入禁止區域
@@ -1012,10 +1030,15 @@ public class Violiant_List extends Violiant_Check
         }
         for(int z = 0;z<limitS_len[i][B]&&Getlimitinflag(z)<2;z++)
         {
-            if(Vio[4]>0)
-                break;
-            System.out.println(street_limitin_lon[i][B][z]+","+street_limitin_lat[i][B][z]);
-            Vio[4] = super.distance(longitude, latitude, street_limitin_lon[i][B][z], street_limitin_lat[i][B][z],1,z,0,0,limitinS[i][B][z],false);
+            int z1 = 0;
+                    for(int y = 0;y<limitS_len[i][B]+limitr_len[i][B];y++){
+                        if(Vior[z][y]==0)
+                        {
+                            z1 = y;
+                            break;
+                        } 
+                    }
+            Vior[0][z1] = super.distance(longitude, latitude, street_limitin_lon[i][B][z], street_limitin_lat[i][B][z],1,z,0,0,limitinS[i][B][z],false);
         }
         if(remind_status[i])
         {
@@ -1023,16 +1046,28 @@ public class Violiant_List extends Violiant_Check
             System.out.println(Getleftrflag(0));
             for(int z = 0;z<leftr_len[i][B]&&Getleftrflag(z)<2;z++)
                     {
-                    //if(Vio[5]>0)
-                      //  break;
-                    Vio[5] = super.distance(longitude, latitude, leftrll[i][B][z*2], leftrll[i][B][z*2+1],2,z,StreetX[i][B],StreetY[i][B],leftr[i][B][z],true);
+                        int z1 = 0;
+                        for(int y = 0;y<leftS_len[i][B]+leftr_len[i][B];y++){
+                        if(Vior[z][y]==0)
+                        {
+                            z1 = y;
+                            break;
+                        } 
+                    }
+                    Vior[1][z1] = super.distance(longitude, latitude, leftrll[i][B][z*2], leftrll[i][B][z*2+1],2,z,StreetX[i][B],StreetY[i][B],leftr[i][B][z],true);
                     }
             for(int z = 0;z<limitr_len[i][B]&&Getlimitinrflag(z)<2;z++)
             {
-            if(Vio[4]>0)
-                break;
+            int z1 = 0;
+                    for(int y = 0;y<limitS_len[i][B]+limitr_len[i][B];y++){
+                        if(Vior[z][y]==0)
+                        {
+                            z1 = y;
+                            break;
+                        } 
+                    }
             //System.out.println(street_limitin_lon[i][B][z]+","+street_limitin_lat[i][B][z]);
-            Vio[4] = super.distance(longitude, latitude, limitrll[i][B][z*2], limitrll[i][B][z*2+1],1,z,0,0,limitr[i][B][z],true);
+            Vior[0][z1] = super.distance(longitude, latitude, limitrll[i][B][z*2], limitrll[i][B][z*2+1],1,z,0,0,limitr[i][B][z],true);
             }
         }
         if(flag)
@@ -1044,12 +1079,12 @@ public class Violiant_List extends Violiant_Check
             Turn_block = street_Turn_block[i][B];
         }
         Violiant_To_Database(Vio,License,name,longitude,latitude,speed, Date_, Time_); 
-        output = Violiant_List_Maker(Vio);
+        output = Violiant_List_Maker(Vio,Vior,limitS_len[i][B]+limitr_len[i][B],leftS_len[i][B]+leftr_len[i][B]);
         super.change(longitude,latitude);
         return output;
     }
     
-    private String Violiant_List_Maker(int Vio[])
+    private String Violiant_List_Maker(int Vio[],int Vior[][],int limit,int left)
     {
         //System.out.println("1");
         String output = "";
@@ -1067,16 +1102,25 @@ public class Violiant_List extends Violiant_Check
             output += "違規左轉,";
         else if(Vio[3] == 2)
             output += "違規右轉,";
-        if(Vio[4] == 1)
-            output += "前方路段有禁止進入區域,";
-        switch(Vio[5])
+        for(int i = 0;i<limit;i++)
         {
-            case 1:output += "前方路段禁止左轉,";break;
-            case 2:output += "前方路段禁止右轉,";break;
-            case 3:output += "前方路段禁止轉彎,";break;
-            case 4:output += "前方300禁止左轉,";break;
-            case 5:output += "前方300禁止右轉,";break;
-            case 6:output += "前方300禁止轉彎,";break;
+            if(Vior[0][i] == 1)
+                output += "前方路段有禁止進入區域,";
+            else if(Vior[0][i] == 2)
+                output += "前方300有禁止進入區域,";
+        }
+        for(int i = 0;i<left;i++)
+        {
+            switch(Vior[1][i])
+            {
+                case 1:output += "前方路段禁止左轉,";break;
+                case 2:output += "前方路段禁止右轉,";break;
+                case 3:output += "前方路段禁止轉彎,";break;
+                case 4:output += "前方300禁止左轉,";break;
+                case 5:output += "前方300禁止右轉,";break;
+                case 6:output += "前方300禁止轉彎,";break;
+                default: break;
+            }
         }
         return output;
     }
