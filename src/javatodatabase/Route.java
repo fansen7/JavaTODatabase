@@ -54,7 +54,7 @@ public class Route extends Thread{
       
 		Route http = new Route();
 http.connect();
-http.Routesearch("2016-12-02", "11:35:44", "12:04:48");//(測試日期,開始時間,結束時間)
+http.Routesearch("2016-12-06", "14:50:39", "14:59:18");//(測試日期,開始時間,結束時間)
 //("yyyy-MM-dd","hh:mm:ss","hh:mm:ss")
 http.start();
 	//	http.sendGet();

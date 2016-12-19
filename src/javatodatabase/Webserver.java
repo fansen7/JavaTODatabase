@@ -519,7 +519,7 @@ public class Webserver implements Runnable {
              this.setKTRUE();
          else if(chkC[i].equals("前方300禁止左轉"))
              this.setLTRUE();
-         else if(chkC[i].equals("前方300禁止右彎"))
+         else if(chkC[i].equals("前方300禁止右轉"))
              this.setMTRUE();
          else if(chkC[i].equals("前方300禁止轉彎"))
              this.setNTRUE();
