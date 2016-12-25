@@ -61,7 +61,7 @@ class Violiant_Check {
         } else if (output.contains("段")) {
             endpoint = output.lastIndexOf("段");
             output = output.substring(0, endpoint + 1);
-        }else if (output.contains("街")) {
+        } else if (output.contains("街")) {
             endpoint = output.lastIndexOf("街");
             output = output.substring(0, endpoint + 1);
         }
@@ -345,8 +345,8 @@ class Violiant_Check {
 public class Violiant_List extends Violiant_Check {
 
     //private String File_Path_List = "mountain.txt";
-    private String File_Path_List = "city.txt";
-
+    //private String File_Path_List = "city.txt";
+    private String File_Path_List = "completelyList.txt";
     private String[] Street_Name;
     private double[] Street_Limit_Speed;
 
@@ -753,12 +753,6 @@ public class Violiant_List extends Violiant_Check {
             JSONObject json = new JSONObject(builder.toString()); //轉換json格式
             JSONArray ja = json.getJSONArray("results");//取得json的Array物件
             StreetName = ja.getJSONObject(0).getString("formatted_address");
-            /* for (int i = 0; i < ja.length(); i++) {
-                  System.out.print("地址：" + ja.getJSONObject(i).getString("formatted_address") + " ");
-                  System.out.print("緯度：" + ja.getJSONObject(i).getJSONObject("geometry").getJSONObject("location").getDouble("lat") + " ");
-                  System.out.print("經度：" + ja.getJSONObject(i).getJSONObject("geometry").getJSONObject("location").getDouble("lng"));
-                  System.out.println("");
-            }*/
         } catch (JSONException ex) {
             System.out.println(ex);
         } catch (IOException ex) {
@@ -892,10 +886,6 @@ public class Violiant_List extends Violiant_Check {
             //0->沒有特殊違規事件需判斷
             case 0:
                 break;
-            //1->判斷逆向
-            /*case 1:
-                Vio[1] = super.reverse_direction(longitude,latitude,StreetX[i][B],StreetY[i][B]);
-                break;*/
             //2->判斷進入禁止區域
             case 2:
                 Vio[2] = 1;
@@ -917,49 +907,9 @@ public class Violiant_List extends Violiant_Check {
                     }
                 }
                 break;
-            //4->判斷逆向+進入禁止區域
-            /*case 4:
-                Vio[1] = super.reverse_direction(longitude,latitude,StreetX[i][B],StreetY[i][B]);
-                Vio[2] = 1;
-               // Vio[4] = super.distance(longitude, latitude, street_limitin_lon[i], street_limitin_lat[i]);
+
+            default:
                 break;
-            //5->判斷進入禁止區域+違規左轉
-            case 5:
-                Vio[2] = 1;
-                flag = true;
-               // Vio[4] = super.distance(longitude, latitude, street_limitin_lon[i], street_limitin_lat[i]);
-                for(int z = 0;z<leftS_len[i][B]&&Getleftflag(z)<3;z++)
-                {
-                    if(Vio[5]>0)
-                        break;
-                    Vio[5] = super.distance(longitude, latitude, street_left_lon[i][B][z], street_left_lat[i][B][z],2,z,StreetX[i][B],StreetY[i][B],leftS[i][B][z]);
-                }
-                break;
-            //6->判斷逆向+違規左轉
-            case 6:
-                Vio[1] = super.reverse_direction(longitude,latitude,StreetX[i][B],StreetY[i][B]);
-                flag = true;
-                for(int z = 0;z<leftS_len[i][B]&&Getleftflag(z)<3;z++)
-                {
-                    if(Vio[5]>0)
-                        break;
-                    Vio[5] = super.distance(longitude, latitude, street_left_lon[i][B][z], street_left_lat[i][B][z],2,z,StreetX[i][B],StreetY[i][B],leftS[i][B][z]);
-                }
-                break;
-            //7->判斷逆向+進入禁止區域+違規左轉
-            case 7:
-                Vio[1] = super.reverse_direction(longitude,latitude,StreetX[i][B],StreetY[i][B]);
-                Vio[2] = 1;
-                flag = true;
-               // Vio[4] = super.distance(longitude, latitude, street_limitin_lon[i], street_limitin_lat[i]);
-                for(int z = 0;z<leftS_len[i][B]&&Getleftflag(z)<3;z++)
-                {
-                    if(Vio[5]>0)
-                        break;
-                    Vio[5] = super.distance(longitude, latitude, street_left_lon[i][B][z], street_left_lat[i][B][z],2,z,StreetX[i][B],StreetY[i][B],leftS[i][B][z]);
-                }
-                break;
-            default:break;*/
         }
 
         for (int z = 0; z < limitS_len[i][B]; z++) {
@@ -1029,8 +979,6 @@ public class Violiant_List extends Violiant_Check {
                 output += "超速,";
                 break;
         }
-        /*if(Vio[1] == 1)
-            output += "逆向行駛,";*/
         if (Vio[2] == 1) {
             output += "禁行區域,";
         }
@@ -1043,7 +991,7 @@ public class Violiant_List extends Violiant_Check {
             if (Vior[0][i] == 1) {
                 output += "前方路段有禁止進入區域,";
             } else if (Vior[0][i] == 2) {
-                output += "前方300有禁止進入區域,";
+                output += "前方300公尺有禁止進入區域,";
             }
         }
         for (int i = 0; i < left; i++) {
@@ -1058,13 +1006,13 @@ public class Violiant_List extends Violiant_Check {
                     output += "前方路段禁止轉彎,";
                     break;
                 case 4:
-                    output += "前方300禁止左轉,";
+                    output += "前方300公尺禁止左轉,";
                     break;
                 case 5:
-                    output += "前方300禁止右轉,";
+                    output += "前方300公尺禁止右轉,";
                     break;
                 case 6:
-                    output += "前方300禁止轉彎,";
+                    output += "前方300公尺禁止轉彎,";
                     break;
                 default:
                     break;

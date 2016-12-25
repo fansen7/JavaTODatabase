@@ -515,13 +515,13 @@ public class Webserver implements Runnable {
              this.setITRUE();
          else if(chkC[i].equals("前方路段禁止轉彎"))
              this.setJTRUE();
-         else if(chkC[i].equals("前方300有禁止進入區域"))
+         else if(chkC[i].equals("前方300公尺有禁止進入區域"))
              this.setKTRUE();
-         else if(chkC[i].equals("前方300禁止左轉"))
+         else if(chkC[i].equals("前方300公尺禁止左轉"))
              this.setLTRUE();
-         else if(chkC[i].equals("前方300禁止右轉"))
+         else if(chkC[i].equals("前方300公尺禁止右轉"))
              this.setMTRUE();
-         else if(chkC[i].equals("前方300禁止轉彎"))
+         else if(chkC[i].equals("前方300公尺禁止轉彎"))
              this.setNTRUE();
      }
  }
